@@ -1,3 +1,4 @@
+package Exceptions;
 import java.rmi.server.ExportException;
 
 public class NonAutoriseException extends Exception {
