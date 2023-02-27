@@ -33,18 +33,19 @@ public class Main {
             if(objs.isEmpty()){
                 throw new AucunPeripheriqueException("Aucun périphérique USB détecté");
             } else {
+                //on parcourt la liste des périphériques usb
                 for (ObjectName obj : objs) {
                     System.out.println("Périphérique USB détecté : " + obj.getCanonicalName());
+                    //on verifie si le périphérique est dans la liste des périphériques autorisés
                     if(obj.getCanonicalName().contains("vid=0x1a86&pid=0x7523")){
                         System.out.println("Périphérique USB autorisé");
-                        //envoyer l'objet à l'anti-virus
+                        //On envoie l'objet à l'anti-virus
                         /*if(antivirus.detecteVirus(obj)){
                             throw new VirusDetecte("Virus détecté");
                         } else {
                             System.out.println("Aucun virus détecté");
-                            lancer le piti programme qui nous demande ce qu'on veux faire (ouvrir dans l'explorateur, etc...)
+                            //On lance le petit programme qui nous demande ce qu'on veut faire (ouvrir dans l'explorateur, etc...)
                         }*/
-
                     }else{
                         throw new NonAutoriseException("Périphérique USB non autorisé");
                     }
@@ -52,7 +53,7 @@ public class Main {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            //ejecter la clé usb
+            //On ejecte le périphérique si une exception est levée
         }
        
     }
