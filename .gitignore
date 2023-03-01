@@ -21,3 +21,7 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Mon dossier de tests au cas où j'ai un doute sur quelque chose ou alors quand
+# je sais pas ce que fait un morceau de code
+test/*
