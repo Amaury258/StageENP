@@ -1,10 +1,14 @@
 package v2;
 
 import java.io.*;
+import java.util.List;
+import java.util.Scanner;
+
 
 public class Main2 {
 
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
         File[] roots = File.listRoots();
         int i = 0;
         while (true) {
@@ -13,18 +17,24 @@ public class Main2 {
                 i++;
             }
             File[] newRoots = File.listRoots();
+            boolean found = false;
+            boolean fini = false;
             for (File root : newRoots) {
-                if (!contains(roots, root)) {
-                    System.out.println("USB device inserted: " + root.getAbsolutePath());
-
-                    // Analyse antivirus + autorisation
-
-                    System.out.println("La clé USB n'as pas été autorisée ou contient un virus");
+                for (File oldRoot : roots) {
+                    if (oldRoot.getAbsolutePath().equals(root.getAbsolutePath()) && !oldRoot.getAbsolutePath().equals("C:\\")) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found || !contains(roots,root)) {
+                    // la clé USB a été trouvée, faites quelque chose ici
+                    System.out.println("Clé USB détecté : " + root.getAbsolutePath());
                     try {
+                        sc.nextLine();
                         eject(root);
                         i--;
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }
             }
@@ -32,7 +42,7 @@ public class Main2 {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -59,44 +69,6 @@ public class Main2 {
         while ((line = reader.readLine()) != null) {
             output.append(line + "\n");
         }
-        System.out.println(output.toString());
-
-
+        System.out.println(output);
     }
 }
-
-
-/*
-    public static void main(String[] args) {
-        File[] roots = File.listRoots();
-
-        while (true) {
-            File[] newRoots = File.listRoots();
-            for (File root : newRoots) {
-                if (!contains(roots, root)) {
-                    System.out.println("USB device inserted: " + root.getAbsolutePath());
-                }
-            }
-            for (File root : roots) {
-                if (!contains(newRoots, root)) {
-                    System.out.println("USB device removed: " + root.getAbsolutePath());
-                }
-            }
-            roots = newRoots;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static boolean contains(File[] roots, File root) {
-        for (File file : roots) {
-            if (file.equals(root)) {
-                return true;
-            }
-        }
-        return false;
-    }
-*/
