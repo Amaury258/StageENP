@@ -1,4 +1,4 @@
-/*
+package v1;/*
  * USB Analysor
  * Version 1.0
  * Par: Amaury DEMARQUE
