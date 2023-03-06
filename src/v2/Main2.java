@@ -1,7 +1,11 @@
 package v2;
 
-import java.io.*;
-import java.util.List;
+import javax.swing.filechooser.FileSystemView;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 
@@ -12,24 +16,28 @@ public class Main2 {
         File[] roots = File.listRoots();
         int i = 0;
         while (true) {
+            FileSystemView fsv = FileSystemView.getFileSystemView();
             if(i==0){
                 System.out.println("Recherche de clé USB");
                 i++;
             }
             File[] newRoots = File.listRoots();
-            boolean found = false;
-            boolean fini = false;
             for (File root : newRoots) {
-                for (File oldRoot : roots) {
-                    if (oldRoot.getAbsolutePath().equals(root.getAbsolutePath()) && !oldRoot.getAbsolutePath().equals("C:\\")) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found || !contains(roots,root)) {
+                if (fsv.isDrive(root) && fsv.getSystemTypeDescription(root).contains("USB")) {
                     // la clé USB a été trouvée, faites quelque chose ici
                     System.out.println("Clé USB détecté : " + root.getAbsolutePath());
+                    System.out.println("Appuyez sur \"Entrée\" pour éjecter la clé USB.");
                     try {
+                        /*
+                            ->IndexerVolumeGuid
+                            ->lastModified()
+                            ->HashCode
+                         */
+
+                        //int index = analyseIndexer()
+                        int lastModif = analyseAll(root);
+                        //int hash = analyseHashCode();
+
                         sc.nextLine();
                         eject(root);
                         i--;
@@ -47,13 +55,26 @@ public class Main2 {
         }
     }
 
-    private static boolean contains(File[] roots, File root) {
-        for (File file : roots) {
-            if (file.equals(root)) {
-                return true;
+    private static int analyseAll(File usbfile){
+        int res = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
+        for(File file : usbfile.listFiles()){
+            if(file.isDirectory()){
+                res = analyseAll(file);
+                if(res == 1){
+                    return res;
+                }
+            } else {
+                //on prend depuis la bdd la date de la derniere modification
+                String modified_at = null;
+                if(sdf.format(file.lastModified()).equals(modified_at)){
+                    res = 0;
+                } else {
+                    res = 1;
+                }
             }
         }
-        return false;
+        return res;
     }
 
     private static void eject(File drive) throws IOException {
