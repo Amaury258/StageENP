@@ -2,28 +2,15 @@
  * USB Analysor
  * Version 2
  * Par: Amaury DEMARQUE
- *      Stagiaire à l'École Nationale de Police de Montbéliard
+ * Stagiaire à l'École Nationale de Police de Montbéliard
  */
 
 package v2;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.util.*;
-
-import java.nio.channels.ClosedChannelException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import javax.crypto.spec.SecretKeySpec;
+//import de librairie standard
 import javax.swing.filechooser.FileSystemView;
+import java.io.*;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -83,7 +70,7 @@ public class Main {
 
                     sc.nextLine();
 
-                    //Ejection de la clé usb
+                    //Ejection de la clé usb + affichage du résultat
                     USBDetector.eject(root);
                     i--;
                 }

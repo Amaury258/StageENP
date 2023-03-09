@@ -1,12 +1,12 @@
 package v2;
 
+//import de librairies externe
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import javax.swing.filechooser.FileSystemView;
-
+//import de librairies standard
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -21,7 +21,7 @@ public class USBDetector {
         ArrayList<String> lines = new ArrayList<>();
         File tagnormal = null;
         try {
-            tagnormal = File.createTempFile("tagnormal","");
+            tagnormal = File.createTempFile("tagnormal","",new File(System.getProperty("user.dir")+"\\tmp"));
             File indexFile = new File(root.getAbsolutePath() + "System Volume Information\\IndexerVolumeGuid");
             FileReader fileReader = new FileReader(indexFile, Charset.forName(getEncodage(indexFile)));
             BufferedReader reader = new BufferedReader(fileReader);

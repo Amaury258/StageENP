@@ -1,15 +1,18 @@
 package v2;
 
+//import de librairie externe
+import org.apache.commons.io.FileUtils;
+
+//import de librairies standard
 import javax.swing.filechooser.FileSystemView;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main2 {
     public static void main(String[] args) throws Exception {
         int i = 0;
+        ArrayList<File> usb_connected = new ArrayList<>();
         while(true){
             if (i == 0) {
                 System.out.println("Recherche de clé USB");
@@ -19,9 +22,12 @@ public class Main2 {
             Scanner sc = new Scanner(System.in);
             FileSystemView fsv = FileSystemView.getFileSystemView();
             File[] newRoots = File.listRoots();
+            for(File connected : usb_connected){
+                //Vérifier que l'usb connecté est toujours connecté : sinon le retirer de la liste
+            }
             //parcours des disques
             for (File root : newRoots) {
-                if (fsv.isDrive(root) && fsv.getSystemTypeDescription(root).contains("USB")){
+                if (fsv.isDrive(root) && fsv.getSystemTypeDescription(root).contains("USB") && !usb_connected.contains(root)){
                     // la clé USB a été trouvée, faites quelque chose ici
                     System.out.println("Clé USB détecté : " + root.getAbsolutePath());
 
@@ -31,54 +37,48 @@ public class Main2 {
                     //Recuperation du tag crypté
                     File crypted_tag = new File(root.getAbsolutePath()+"System Volume Information\\TAG");
 
-                    File tmp = File.createTempFile("uncrypted","",new File(System.getProperty("user.dir")));
-                    tmp.deleteOnExit();
-                    File decrypted_tag = HashUtils.decrypt(crypted_tag, tmp, "StageInformatiqu".getBytes());
-
-                    FileReader normalFileReader = new FileReader(tag);
-                    FileReader cryptedFileReader = new FileReader(decrypted_tag);
-
-                    BufferedReader normalReader = new BufferedReader(normalFileReader);
-                    BufferedReader cryptedReader = new BufferedReader(cryptedFileReader);
-
-                    /*String line,line2;
-                    boolean diff = false;
-                    while((((line=normalReader.readLine())!=null) && (line2=cryptedReader.readLine())!=null)) {
-                        if (!line.equals(line2)) {
-                            System.out.println("Différence détecté : \n" +
-                                    line + "\n" +
-                                    line2 + "\n");
-                            diff = true;
-                            break;
-                        }
-                    }*/
-
-                    String line1 = normalReader.readLine();
-                    String line2 = cryptedReader.readLine();
-                    System.out.println("Tag de la méthode makeTAG() : \n");
-                    while(line1 != null){
-                        System.out.println(line1);
-                        line1 = normalReader.readLine();
-                    }
-
-                    System.out.println("\nTag décrypté : \n");
-                    while(line2 != null){
-                        System.out.println(line2);
-                        line2 = cryptedReader.readLine();
-                    }
-
-                    sc.nextLine();
-
-                    //if(diff){
+                    if(!crypted_tag.exists()){
+                        System.out.println("La clé ne possede pas de fichier TAG, elle n'a donc pas été passé sur la machine blanche.");
                         USBDetector.eject(root);
-                    //}
+                    } else {
+                        File tmp = File.createTempFile("uncrypted","",new File(System.getProperty("user.dir")+"\\tmp"));
+                        File decrypted_tag = HashUtils.decrypt(crypted_tag, tmp, "StageInformatiqu".getBytes());
 
-                    tag.delete();
+                        Scanner normalScan = new Scanner(tag);
+                        Scanner cryptedScan = new Scanner(decrypted_tag);
+                        String line1 ="";
+                        String line2 ="";
+                        boolean diff = false;
+                        while(normalScan.hasNextLine() && cryptedScan.hasNextLine()){
+                            line1 = normalScan.nextLine();
+                            line2 = cryptedScan.nextLine();
+                            diff = !line1.equals(line2);
+                            if(diff){
+                                break;
+                            }
+                        }
 
+                        FileUtils.cleanDirectory(new File(System.getProperty("user.dir")+"\\tmp"));
+
+                        sc.nextLine();
+
+                        if(diff){
+                            System.out.println("Différence détecté : \n");
+                            System.out.println("\tmakeTAG() : \n\t"+
+                                    line1+"\n");
+                            System.out.println("\tTAG chiffré : \n\t"+
+                                    line2+"\n");
+                            USBDetector.eject(root);
+                        } else {
+                            System.out.println("Aucune différence détecté, bonne continuation ^^");
+                            usb_connected.add(root);
+                        }
+
+                    }
                     i--;
+
                 }
             }
-
         }
     }
 }
