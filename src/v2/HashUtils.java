@@ -1,5 +1,6 @@
 package v2;
 
+//import standard de java
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
@@ -63,14 +64,16 @@ public class HashUtils {
         FileOutputStream outputStream = new FileOutputStream(decryptedFile);
 
         // Déchiffrement du fichier
-        byte[] inputBytes = new byte[(int) encryptedFile.length()];
-        inputStream.read(inputBytes);
-        byte[] outputBytes = cipher.doFinal(inputBytes);
-        outputStream.write(outputBytes);
-
-        // Fermeture des flux de lecture et d'écriture
-        inputStream.close();
-        outputStream.close();
+        try {
+            byte[] inputBytes = new byte[(int) encryptedFile.length()];
+            inputStream.read(inputBytes);
+            byte[] outputBytes = cipher.doFinal(inputBytes);
+            outputStream.write(outputBytes);
+        } finally {
+            // Fermeture des flux de lecture et d'écriture dans le bloc finally
+            inputStream.close();
+            outputStream.close();
+        }
 
         // Retourne le fichier déchiffré
         return decryptedFile;

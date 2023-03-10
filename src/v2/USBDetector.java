@@ -3,10 +3,8 @@ package v2;
 //import de librairies externe
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
-//import de librairies standard
+//import de librairies standard de java
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -99,16 +97,5 @@ public class USBDetector {
             output.append(line + "\n");
         }
         System.out.println(output);
-    }
-
-    public static void closeAllFileStreams(File file) {
-        try {
-            FileUtils.touch(file); // Crée le fichier s'il n'existe pas
-            IOUtils.closeQuietly(new FileInputStream(file)); // Ferme le flux d'entrée
-            IOUtils.closeQuietly(new FileOutputStream(file, true)); // Ferme le flux de sortie
-            IOUtils.closeQuietly(new RandomAccessFile(file, "rws")); // Ferme le flux d'accès aléatoire
-        } catch (IOException e) {
-            System.err.println("Erreur lors de la fermeture des flux : " + e.getMessage());
-        }
     }
 }
