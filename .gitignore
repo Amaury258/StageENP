@@ -26,6 +26,9 @@ hs_err_pid*
 # je sais pas ce que fait un morceau de code
 src/test/
 
+# Dossier pour les fichiers temporaires que le programme crée
+tmp/
+
 
 .idea/
 *.iml
