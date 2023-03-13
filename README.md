@@ -74,3 +74,33 @@ avec l'antivirus et surement vérifier si elle figure sur la base des périphér
 données pour stocker les clés USB de l'école, et ensuite la déverrouiller et l'éjecter si elle contient un potentiel 
 virus.
 
+
+<h2>Semaine 2</h2>
+
+Lors de cette semaine, j'ai compris plusieurs chose, tout d'abord, la base des périphériques autorisé ne servais à rien
+dans notre contexte et qu'il fallait à la place créer une sorte de TAG qui permettrais de dire si oui ou non la clé usb
+a été passé sur la machine blanche qui est la machine qui analysera la clé usb avec l'antivirus.
+
+Ce qui veux dire qu'il faut que je fasse un programme java pour la machine blanche et un autre pour l'utilisateur (ce 
+qui veux dire toute les autres machine).
+
+Pour le premier programme, sur la machine blanche :
+
+J'ai donc cherché un moyen de faire le TAG et avec Mr RIGAUD on a trouvé une solution qui consiste à prendre le GUID 
+de la clé USB (qui se trouve dans le dossier caché "System Volume Information" sur la clé USB) et ensuite y mettre 
+la liste des fichiers de la clé qui sera hashé (en SHA-256), et ensuite chiffrer le tout en AES.
+
+Pour le deuxieme programme, sur la machine utilisateur : 
+
+Si le fichier existe et est chiffré, ça voudra déja dire que la clé est passé sur la machine blanche au moins une fois,
+maintenant il faut voir dans le cas où on décide de modifier ce TAG, normalement ça genere une érreur, ensuite on doit
+vérifier que le TAG (qu'on créer à partir de la méthode creerTAG() qui genere le tag de base) est identique au TAG 
+déchiffré.
+
+J'ai ensuite cherché un moyen de faire l'analyse antivirus avec BitDefender (l'antivirus qu'utilise l'ecole de police)
+depuis java et il faut une api spécial de Bitdefender, j'ai ensuite cherché une autre solution qui consiste à utiliser 
+une commande (sur un terminal), sans succés, la commande sensé etre dans le dossier de BitDefender n'apparait pas.
+
+<h2>Semaine 3</h2>
+
+
