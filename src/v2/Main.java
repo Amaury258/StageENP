@@ -30,9 +30,8 @@ public class Main {
                     // la clé USB a été trouvée
                     System.out.println("Clé USB détecté : " + root.getAbsolutePath());
 
-
                     //Creation du tag
-                    File tag = USBDetector.makeTAG(root);
+                    File tag = USBDetector.makeTAGAntivirus(root);
 
                     FileReader fileReader = new FileReader(tag);
                     BufferedReader reader = new BufferedReader(fileReader);
@@ -47,8 +46,9 @@ public class Main {
                     reader.close();
                     fileReader.close();
 
-                    //soit lire le fichier C:\!dep-user\cléTAG
-                    //soit prendre l'id de la clé, son nom et sa lettre de lecteur, hasher le tout
+                    //soit, lire le fichier C:\!dep-user\cléTAG qui aura une clé fixe
+                    //soit, prendre l'id de la clé, son nom et sa lettre de lecteur, hasher le tout
+
                     //Chiffrement du tag + sauvegarde sur la clé usb
                     File CRYPTED_TAG = HashUtils.encrypt(tag, root.getAbsolutePath()+"System Volume Information\\TAG",
                             "StageInformatiqu".getBytes());
@@ -69,7 +69,6 @@ public class Main {
                     reader.close();
                     fileReader.close();
 
-
                     System.out.println("Appuyez sur \"Entré\" pour éjecter la clé usb");
                     sc.nextLine();
 
@@ -78,7 +77,6 @@ public class Main {
                     i--;
                 }
             }
-
         }
     }
 }
