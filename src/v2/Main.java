@@ -10,6 +10,7 @@ package v2;
 //import de librairie standard de java
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
@@ -72,7 +73,7 @@ public class Main {
                     System.out.println("Appuyez sur \"Entré\" pour éjecter la clé usb");
                     sc.nextLine();
 
-                    //Ejection de la clé usb + affichage du résultat
+                    //Ejection de la clé usb
                     USBDetector.eject(root);
                     i--;
                 }

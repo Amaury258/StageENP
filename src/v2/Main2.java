@@ -13,6 +13,7 @@ import java.util.Scanner;
 public class Main2 {
     public static void main(String[] args) throws Exception {
         int i = 0;
+        //Liste des clé usb connecté au pc
         ArrayList<File> usb_connected = new ArrayList<>();
         while(true){
             if (i == 0) {
@@ -21,9 +22,11 @@ public class Main2 {
             }
 
             Scanner sc = new Scanner(System.in);
+
             FileSystemView fsv = FileSystemView.getFileSystemView();
             File[] newRoots = File.listRoots();
             Iterator<File> iter = usb_connected.iterator();
+            //Vérifier si les clés usb de la liste sont toujours connecté
             while (iter.hasNext()) {
                 File f = iter.next();
                 if (!contains(newRoots,f)) {
@@ -52,43 +55,50 @@ public class Main2 {
                             File tmp = File.createTempFile("uncrypted", "", new File(System.getProperty("user.dir") + "\\tmp"));
                             File decrypted_tag = HashUtils.decrypt(crypted_tag, tmp, "StageInformatiqu".getBytes());
 
+                            //Lecture du fichier TAG (déchiffré)
                             Scanner normalscan = new Scanner(tag);
                             Scanner cryptedscan = new Scanner(decrypted_tag);
                             Scanner scanvirus = new Scanner(decrypted_tag);
                             String linevirus = scanvirus.nextLine();
                             String line1,line2;
+                            //Verification de l'attribut virus, si il est à 'true', on ejecte
                             if(linevirus.substring(linevirus.indexOf(':')+1).trim().equals("true")){
                                 System.out.println("Virus détecté !");
                                 diff = true;
+                                USBDetector.eject(root);
                             }
+
+                            //Lecture de tout le fichier TAG (déchiffré et par la methode makeTAG)
                             normalscan.nextLine();
                             cryptedscan.nextLine();
                             while ((normalscan.hasNextLine() && cryptedscan.hasNextLine()) && !diff) {
                                 line1 = normalscan.nextLine();
                                 line2 = cryptedscan.nextLine();
+                                //Si les lignes sont différentes, on ejecte
                                 if (!line1.equals(line2)) {
                                     System.out.println("Le fichier TAG déchiffré est différent du fichier TAG créer depuis le programme!");
                                     diff = true;
+                                    USBDetector.eject(root);
                                 }
                             }
 
+                            //Fermeture des flux de lecture de fichier
                             scanvirus.close();
                             cryptedscan.close();
                             normalscan.close();
 
                         } catch (Exception e) {
+                            //Si le fichier TAG (chiffré) a été modifié, on ejecte
                             System.out.println("Le fichier TAG a été modifié manuellement");
                             diff = true;
+                            USBDetector.eject(root);
                         }
 
-                        System.out.println("Appuyez sur \"Entré\" pour éjecter la clé usb");
-                        sc.nextLine();
-
+                        //Suppression des fichiers temporaires
                         FileUtils.cleanDirectory(new File(System.getProperty("user.dir") + "\\tmp"));
 
-                        if (diff) {
-                            USBDetector.eject(root);
-                        } else {
+                        //Si tout ce passe bien, on peut utiliser la clé
+                        if (!diff) {
                             System.out.println("Aucune différence détecté, bonne continuation ^^");
                             usb_connected.add(root);
                         }
@@ -99,6 +109,13 @@ public class Main2 {
         }
     }
 
+    /**
+     * Methode pour vérifier si un objet File est dans un tavbleau de File
+     *
+     * @param roots
+     * @param root
+     * @return
+     */
     private static boolean contains(File[] roots, File root) {
         for (File file : roots) {
             if (file.equals(root)) {

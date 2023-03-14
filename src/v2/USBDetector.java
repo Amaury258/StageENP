@@ -11,22 +11,31 @@ import org.jdom2.input.SAXBuilder;
 //import de librairies standard de java
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class USBDetector {
 
-    public static File makeTAG(File root) throws IOException, ExecutionException, InterruptedException {
+    /**
+     * Créateur du TAG Temporaire non chiffré pour pouvoir le comparer avec le fichier TAG de la clé qui lui est chiffré
+     *
+     * @param root
+     * @return
+     */
+    public static File makeTAG(File root) {
         ArrayList<String> lines = new ArrayList<>();
         File tagnormal = null;
         try {
+            //Création du fichier temporaire non chiffré
             tagnormal = File.createTempFile("tagnormal","",new File(System.getProperty("user.dir")+"\\tmp"));
-            boolean virus = false;
 
+            //Si la clé usb est passé sur la machine blanche, il ne devrait pas y avoir de virus
+            boolean virus = false;
             lines.add("Virus : "+virus);
-            //SUID 8-4-4-4-12
+
+            //On récupere l'id de la clé USB
             File indexFile = new File(root.getAbsolutePath() + "System Volume Information\\IndexerVolumeGuid");
             FileReader fileReader = new FileReader(indexFile, Charset.forName(getEncodage(indexFile)));
             BufferedReader reader = new BufferedReader(fileReader);
@@ -34,6 +43,7 @@ public class USBDetector {
             reader.close();
             fileReader.close();
 
+            //On récupere dans une liste les fichiers présent sur la clé USB
             lines = getListFiles(root, lines);
 
             if (!lines.isEmpty()) {
@@ -53,14 +63,21 @@ public class USBDetector {
         return tagnormal;
     }
 
-    public static File makeTAGAntivirus(File root) throws IOException, ExecutionException, InterruptedException {
+    /**
+     * Création du TAG coté Machine blanche qui sera chiffré par la suite
+     * @param root
+     * @return
+     */
+    public static File makeTAGAntivirus(File root) {
         ArrayList<String> lines = new ArrayList<>();
         File tagnormal = null;
         try {
             tagnormal = File.createTempFile("tagnormal","",new File(System.getProperty("user.dir")+"\\tmp"));
-            boolean virus = getResultAnalyse();
 
+            //Ici on vas chercher le résultat de l'analyse de la clé USB (elle est faite automatiquement par BitDefender)
+            boolean virus = getResultAnalyse();
             lines.add("Virus : "+virus);
+
             File indexFile = new File(root.getAbsolutePath() + "System Volume Information\\IndexerVolumeGuid");
             FileReader fileReader = new FileReader(indexFile, Charset.forName(getEncodage(indexFile)));
             BufferedReader reader = new BufferedReader(fileReader);
@@ -87,19 +104,38 @@ public class USBDetector {
         return tagnormal;
     }
 
-    public static boolean getResultAnalyse() throws IOException, JDOMException {
+    /**
+     * Methode pour récuperer le résultat de l'analyse de la clé USB
+     *
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws JDOMException
+     */
+    public static boolean getResultAnalyse() throws IOException, InterruptedException, JDOMException {
         boolean res = false;
+
+        // Créer un WatchService pour surveiller le dossier
+        WatchService watchService = FileSystems.getDefault().newWatchService();
+
+        //Chemin ver le dossier Logs
         String filename = "C:\\ProgramData\\Bitdefender\\Desktop\\Profiles\\Logs";
 
+        //Recuperation du sid de l'utilisateur (ici c'est AMAURY mais sur les autres machines il faudrat utiliser System.getProperty("user.name")
         Process process = Runtime.getRuntime().exec("wmic useraccount where name='AMAURY' get sid");
         BufferedReader bfr = new BufferedReader(new InputStreamReader(process.getInputStream()));
         bfr.readLine();
         bfr.readLine();
         String uid = bfr.readLine().replace(" ","");
 
-        File log = getLastLog(new File(filename+"\\"+uid));
-
-        System.out.println("uwu1");
+        //Attend que l'antivirus finisse d'analyser la clé (ici on attend qu'un nouveau fichier log soit créé)
+        File logfolder = getLogFolder(new File(filename+"\\"+uid));
+        Path folderPath = Paths.get(logfolder.getAbsolutePath());
+        folderPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+        while(!waitForNewFile(watchService)){
+            Thread.sleep(1000);
+        }
+        File log = getLastLog(getLogFolder(new File(filename+"\\"+uid)));
 
         // Chargement du fichier XML avec JDOM
         SAXBuilder builder = new SAXBuilder();
@@ -107,14 +143,12 @@ public class USBDetector {
 
         // Accès à l'élément racine
         Element racine = document.getRootElement();
-
         List<Element> typeSummaries = racine.getChild("ScanSummary").getChildren("TypeSummary");
-
         for (Element typeSummary : typeSummaries) {
             String infected = typeSummary.getAttributeValue("infected");
             String suspicious = typeSummary.getAttributeValue("suspicious");
-
-            if(Integer.parseInt(infected) != 0 && Integer.parseInt(suspicious) != 0){
+            if(!infected.equals("0") || !suspicious.equals("0")){
+                System.out.println(infected+" - "+suspicious);
                 res = true;
                 break;
             }
@@ -122,11 +156,16 @@ public class USBDetector {
         return res;
     }
 
-    public static File getLastLog(File file){
-        File res = null;
+
+    /**
+     * Methode pour obtenir le derniere log
+     *
+     * @param file
+     * @return
+     */
+    private static File getLastLog(File file){
         File max = null;
         for(File f : file.listFiles()){
-            System.out.println(f.getAbsolutePath());
             if(max == null){
                 max = f;
             } else {
@@ -135,15 +174,60 @@ public class USBDetector {
                 }
             }
         }
+        return max;
+    }
 
-        for(File f : max.listFiles()){
-            if(f.lastModified()==max.lastModified()){
-                res = f;
+    /**
+     * Methode pour l'attente d'un nouveau fichier log
+     *
+     * @param ws
+     * @return
+     * @throws InterruptedException
+     */
+    private static boolean waitForNewFile(WatchService ws) throws InterruptedException {
+        boolean res = false;
+        WatchKey key = ws.take();
+        for (WatchEvent<?> event : key.pollEvents()) {
+            // Vérifier si l'événement est un événement de création de fichier
+            if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                // Récupérer le nom du fichier créé
+                Path filePath = (Path) event.context();
+                String fileName = filePath.toString();
+
+                res = true;
+
             }
         }
+        key.reset();
         return res;
     }
 
+    /**
+     * Methode pour récuperer le dossier des logs
+     *
+     * @param file
+     * @return
+     */
+    public static File getLogFolder(File file){
+        File max = null;
+        for(File f : file.listFiles()){
+            if(max == null){
+                max = f;
+            } else {
+                if (f.lastModified() > max.lastModified()) {
+                    max = f;
+                }
+            }
+        }
+        return max;
+    }
+
+    /**
+     * Méthode pour récuperer la liste des fichiers d'un dossier
+     * @param file
+     * @param al
+     * @return
+     */
     private static ArrayList getListFiles(File file, ArrayList al){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for(File f : file.listFiles()){
@@ -152,13 +236,11 @@ public class USBDetector {
                     ArrayList<String> newal = new ArrayList<>();
                     newal = getListFiles(f,newal);
                     al.add(HashUtils.hashString(f.getPath(),"SHA-256"));
-                    //al.add(f.getPath());
                     for(String str : newal) {
                         al.add(str);
                     }
                 } else {
                     String str = HashUtils.hashString(f.getPath()+" - "+sdf.format(f.lastModified()),"SHA-256");
-                    //String str = f.getPath()+" - "+sdf.format(f.lastModified());
                     al.add(str);
                 }
             }
@@ -166,6 +248,13 @@ public class USBDetector {
         return al;
     }
 
+    /**
+     * Methode pour récuperer l'encodage d'un fichier (utilisé pour le fichier IndexerVolumeGuid
+     *
+     * @param file
+     * @return
+     * @throws IOException
+     */
     private static String getEncodage(File file) throws IOException {
         String res = "";
         FileInputStream fis = new FileInputStream(file);
@@ -181,6 +270,11 @@ public class USBDetector {
         return res;
     }
 
+    /**
+     * Methode pour ejecter la clé USB
+     * @param drive
+     * @throws IOException
+     */
     public static void eject(File drive) throws IOException {
         // Récupérer la lettre de lecteur de la clé USB
         String driveLetter = drive.getAbsolutePath().substring(0,1);
