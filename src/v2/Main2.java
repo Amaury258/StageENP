@@ -53,7 +53,15 @@ public class Main2 {
                         boolean diff = false;
                         try {
                             File tmp = File.createTempFile("uncrypted", "", new File(System.getProperty("user.dir") + "\\tmp"));
-                            File decrypted_tag = HashUtils.decrypt(crypted_tag, tmp, "StageInformatiqu".getBytes());
+
+                            Scanner scankey = new Scanner(new File(root.getAbsolutePath()+"System Volume Information\\IndexerVolumeGuid"));
+                            String guid = scankey.nextLine();
+                            scankey.close();
+
+                            String hashkey = guid+root.getName();
+                            String hashkey = HashUtils.hashString(hashkey,"SHA-256");
+
+                            File decrypted_tag = HashUtils.decrypt(crypted_tag, tmp, hashkey);
 
                             //Lecture du fichier TAG (déchiffré)
                             Scanner normalscan = new Scanner(tag);

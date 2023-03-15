@@ -47,12 +47,16 @@ public class Main {
                     reader.close();
                     fileReader.close();
 
-                    //soit, lire le fichier C:\!dep-user\cléTAG qui aura une clé fixe
-                    //soit, prendre l'id de la clé, son nom et sa lettre de lecteur, hasher le tout
+                    //prendre l'id de la clé, son nom et sa lettre de lecteur, hasher le tout
+                    Scanner scanid = new Scanner(new File(root.getAbsolutePath()+"System Volume Information\\SystemVolumeGuid"));
+                    String hashkey = scanid.nextLine();
+                    scanid.close();
+
+                    hashkey = HashUtils.hashString(hashkey,"SHA-256");
 
                     //Chiffrement du tag + sauvegarde sur la clé usb
                     File CRYPTED_TAG = HashUtils.encrypt(tag, root.getAbsolutePath()+"System Volume Information\\TAG",
-                            "StageInformatiqu".getBytes());
+                            hashkey.getBytes());
 
                     System.out.println("\nFichier crypté");
 
