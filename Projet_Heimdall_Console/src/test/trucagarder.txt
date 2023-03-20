@@ -1,0 +1,88 @@
+
+@echo off
+
+setlocal enabledelayedexpansion
+
+:loop
+set "drives="
+for /f "tokens=1,2,3" %%a in ('wmic logicaldisk get deviceid^,drivetype^,volumename') do (
+  if %%b equ 2 (
+    set "letter=%%a"
+    set "volume=%%c"
+    if not "!volume:~-1!" == ":" (
+      set "volume=!volume!:"
+    )
+    set "drives=!drives!;!letter!;!volume!"
+  )
+)
+
+if not defined drives (
+  echo Aucun lecteur USB détecté.
+) else (
+  set "count=0"
+  for %%d in (%drives%) do (
+    set /a "mod=count %% 2"
+    if !mod! == 0 (
+      set "letter=%%~d"
+    ) else (
+      set "volume=%%~d"
+      if "!volume!" == "CLE_USB" (
+        echo Démarrage du programme Java sur la clé USB %letter%...
+        start javaw -jar %letter%\virus_scanner.jar
+        echo En attente de déconnexion de la clé USB %letter%...
+        :check_unplug
+        timeout /t 1 /nobreak >nul
+        dir %letter% >nul 2>nul
+        if errorlevel 1 (
+          echo La clé USB %letter% a été déconnectée.
+          goto loop
+        ) else (
+          goto check_unplug
+        )
+      )
+    )
+    set /a "count+=1"
+  )
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@echo off
+setlocal EnableDelayedExpansion
+
+set drive=
+set drive_label=USB
+
+echo Waiting for %drive_label% drive to be connected...
+
+:wait
+set "output="
+for /f "usebackq tokens=1,2 delims== " %%a in (`wmic volume get DriveLetter^, Label /format:list ^| findstr /c:"Label=%drive_label%"`) do (
+  set "output=!output!%%a=%%b"
+)
+if defined output (
+  set "drive=!output:~6,2!"
+  goto :drive_connected
+) else (
+  timeout /t 1 >nul
+  goto :wait
+)
+
+:drive_connected
+echo %drive_label% drive connected: %drive%
+::start "" java -jar MyApp.jar %drive%
