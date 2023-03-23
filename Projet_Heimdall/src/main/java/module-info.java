@@ -9,7 +9,8 @@ module com.example.projet_heimdall {
     requires com.ibm.icu;
     requires org.jdom2;
     requires commons.io;
+    requires com.sun.jna.platform;
 
-    opens com.example.projet_heimdall to javafx.fxml;
-    exports com.example.projet_heimdall;
+    opens projet_heimdall to javafx.fxml;
+    exports projet_heimdall;
 }
