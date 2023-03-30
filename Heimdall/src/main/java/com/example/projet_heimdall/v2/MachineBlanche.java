@@ -176,27 +176,28 @@ public class MachineBlanche extends Task {
                                     });
 
                                 }
+                            if(root.exists()) {
                             AtomicInteger countdown = new AtomicInteger(1);
                             Platform.runLater(() -> {
-                                PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
-                                pauseTransition.setOnFinished(actionEvent -> {
-                                    //Ejection de la clé usb
-                                    try {
-                                        USBDetector.eject(root);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    lbl.setText(lbl.getText() + "\nLe périphérique USB à été éjecté avec succés");
-                                    countdown.getAndDecrement();
-                                });
-                                pauseTransition.play();
+                                    PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
+                                    pauseTransition.setOnFinished(actionEvent -> {
+                                        //Ejection de la clé usb
+                                        try {
+                                            USBDetector.eject(root);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        lbl.setText(lbl.getText() + "\nLe périphérique USB à été éjecté avec succés");
+                                        countdown.getAndDecrement();
+                                    });
+                                    pauseTransition.play();
                             });
 
                             //doit attendre la fin de l'éjection (ce qu'il y a juste au dessus)
                             while (countdown.intValue() == 1) {
                                 Thread.sleep(1000);
                             }
-
+                        }
                             for (j = 10; j > 0; j--) {
                                 int finalJ = j;
                                 Platform.runLater(() -> {
