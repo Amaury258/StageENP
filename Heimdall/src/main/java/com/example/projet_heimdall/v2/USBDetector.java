@@ -161,7 +161,10 @@ public class USBDetector {
         int res = 0;
 
 
-            Platform.runLater(() -> tuto.show());
+            Platform.runLater(() -> {
+                tuto.show();
+                tuto.setX(750);
+            });
             try {
                 Runtime.getRuntime().exec("explorer.exe /root,::{20D04FE0-3AEA-1069-A2D8-08002B30309D}");
             } catch (IOException e) {
@@ -214,8 +217,6 @@ public class USBDetector {
             // Chargement du fichier XML avec JDOM
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(log);
-
-            System.out.println(document.toString());
 
             // Accès à l'élément racine
             Element racine = document.getRootElement();
