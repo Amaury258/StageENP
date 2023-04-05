@@ -103,4 +103,88 @@ une commande (sur un terminal), sans succés, la commande sensé etre dans le do
 
 <h2>Semaine 3</h2>
 
+J'ai continué mes recherches sur un moyen d'utilisé l'antivirus BitDefender en ligne de commande ou dans mon programme
+java, et j'ai compris qu'il etait impossible de l'utilisé ainsi avec cette version de l'antivirus, mais j'ai aussi 
+remarqué autre chose, lorsqu'on connecte la clé USB sur la machine, l'antivirus lance une analyse automatiquement, 
+il me manquais plus qu'a trouver le fichier de log.
+
+Ce fichier log est un fichier XML qui contient les informations sur l'analyse comme le nombre de fichiers infecté 
+ou alors le fichier qu'on a analyser, ici je vais me servir uniquement du fichier analysé et du nombre de fichiers 
+infecté ou dangereux, si il y a au moins un fichier infecté ou dangereux, la clé est éjecté instantanément, sinon
+on continue l'execution du programme et créer le TAG.
+
+J'ai ensuite remarqué qu'il y avait un probleme avec l'attente du fichier log, des fois, on attendais pendant longtemps
+pour rien, j'ai donc créé un Thread qui vérifie avec une boucle infinie si un fichier à été créer dans un 
+certain dossier, si c'est le cas on utilise break; pour sortir de la boucle et fermer le Thread.
+
+J'ai fais la meme chose pour vérifier que la clé a bien été analysé, si on débranche la clé avant ou pendant l'analyse,
+cela peut generer une erreur qui risque de fermer l'execution du programme et nous on veux que ce programme 
+tourne en boucle, j'ai donc fais un autre Thread qui vérifie la liste des disques, si la clé est toujours connecté, 
+on fais rien, sinon on sort de la boucle. Normalement, ce Thread ne devrais jamais etre arreter depuis lui meme mais 
+si c'est le cas, ça veux dire que la clé a été retiré avant la fin de l'analyse.
+
+<h2>Semaine 4</h2>
+
+Pour commencer cette semaine, j'ai ajouté la possibilité de détecter les disque dur externe, mais en faisant ça 
+j'ai remarqué quelque chose, l'antivirus ne detecte pas les disque dur comme clé USB, ce qui veux dire qu'il n'y a 
+pas d'analyse automatique et donc on doit la faire mannuellement, n'ayant pas trouvé de solution qui pourrais faire 
+lancer l'analyse automatiquement, j'ai donc décidé de demander l'analyse pour les disque dur externe et les clé USB.
+
+Pour ça j'ai fais une fenetre "Tuto" qui explique comment faire l'analyse d'un périphérique USB qui s'ouvre quand on
+detecte un périphérique USB.
+
+Le projet fonctionne en partie, il manque juste la fonctionnalité pour detecter les téléphones et les ejecter mais 
+pour ce qui est des fonctionnalités de bases, c'est à dire la détection de périphérique de stockage USB, l'analyse
+de celui ci et enfin son ejection, tout fonctionne.
+
+Maintenant il faut que je puisse faire en sorte que le programme java s'execute sous un fichier jar afin d'avoir une
+version stable pour l'utiliser sur les machines clientes.
+
+<h2>Semaine 5</h2>
+
+Afin de transformer le projet en fichier executable jar, il faut que je créer un Artifact (on clique sur File, 
+Project Structure puis il y a un onglet Artifacts puis il faut choisir quel type d'artifact on veut utiliser, 
+ici on choisi JAR from Modules)
+
+Une fois l'Artifact créé, il nous faut le construire, on vas donc dans Build, Build Artifact et ensuite on clique 
+sur notre Artifact, et enfin on se retrouve avec notre fichier jar, pour l'utiliser il faut faire 
+"java -jar monprojet.jar" ce qui lance le programme java.
+
+Ceci fonctionne si il n'y a pas de librairies ajoutées, dans notre cas ça ne fonctionne pas et en plus, pour une
+raison qui m'est inconnue, il manque des fichier pour JavaFX, j'ai trouvé une solution qui consiste à changer la commande
+"java -jar" en "java --module-path chemin/vers/mes/modules/javafx --add-modules javafx.controls,javafx.fxml -jar monprojet.jar"
+ce qui normalement lance le programme javafx si la bibliotheque JavaFX est bien ajouté à la variable d'environnement PATH.
+
+Ce qui veux dire qu'il faut que je fasse un script qui vérifie si les deux bibliotheque (Java et JavaFX) sont bien
+présents sur la machine, sinon il faut ajouter le chemin vers ceux ci dans la variable PATH (les bibliotheques Java et 
+JavaFX seront données avec le projet).
+
+J'ai aussi remarqué que USB Disk Ejector, qui me permet d'ejecter les périphériques USB, n'est pas compté comme une
+bibliotheque, logique en soit, ce qui veut dire qu'il faut que je trouve un moyen d'y remedier, j'ai donc 
+effectué quelque test et j'ai remarqué que l'utilisation de System.getProperty("user.dir") nous donne le dossier 
+où se trouve le fichier jar, ce qui veut dire qu'on peut y placer le logiciel USB Disk Ejector dans le meme dossier, 
+j'ai donc décidé de le mettre dans un dossier lib donné avec le projet.
+
+Ensuite j'ai eu plusieurs probleme, l'un d'entre eux est le fait que certains morceau de mon code pose probleme apres 
+le passage vers le fichier jar, comme par exemple les fichiers temporaires que je stockais dans le dossier tmp 
+sur le projet, n'existe pas pour le fichier jar, j'ai donc ajouté une vérification en début de programme qui 
+d'abord vérifie si le dossier tmp existe et le crée sinon.
+
+J'ai ensuite remarqué que le programme java depuis le jar ne peut pas acceder aux script batch, ce qui veut dire 
+qu'il faut que le script ejecter.cmd doit etre dans le meme dossier que le script qui lance le programme.
+
+J'ai aussi eu quelque probleme avec les commande windows, notament celles qui crée un raccourci, lorsque je faisais 
+le raccourci, on ne pouvais l'executer, c'etait juste une erreur dans le nommage du fichier raccourci qui devait avoir 
+comme extension .lnk . Il y avait aussi le PATH qui posait probleme, j'ai remarqué sur la machine blanche 
+(et je pense que c'est le meme cas sur les machine clientes) qu'il n'y avait pas la jdk de java, j'ai donc du utiliser
+setx PATH "chemin/vers/la/jdk" /M pour ajouter la jdk au path du pc, ceci nessecite un redemarrage du pc donc juste apres
+je demande avec set /p "input=Redemarrer? (o/n)" ce qui demande à l'utilisateur si il veut redemarrer le pc maintenant 
+ou continuer ce qu'il fait.
+
+Maintenant que les problemes trouvés ont été reglé il manque plus qu'a faire passer le programme sur la machine blanche
+et cliente, la partie la plus drole sera pour la machine cliente puisqu'il faut que l'ordinateur appelle le 
+programme sur le serveur, tant dis que pour la machine blanche il s'agit juste de transferer l'executable jar 
+(avec ce qu'il a besoin pour tourner) sur la machine blanche, donc rien de bien compliqué.
+
+<h2>Semaine 6</h2>
 

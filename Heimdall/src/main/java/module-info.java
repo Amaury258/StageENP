@@ -9,6 +9,7 @@ module com.example.projet_heimdall {
     requires com.sun.jna.platform;
     requires org.jdom2;
     requires com.ibm.icu;
+    requires com.fazecast.jSerialComm;
 
     opens com.example.projet_heimdall to javafx.fxml;
     exports com.example.projet_heimdall;
