@@ -21,6 +21,29 @@ public class HashUtils {
         }
     }
 
+    public static String hashFile(String filename){
+        String hash = "";
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            FileInputStream fis = new FileInputStream(filename);
+            byte[] dataBytes = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(dataBytes)) != -1) {
+                md.update(dataBytes, 0, bytesRead);
+            }
+            byte[] hashBytes = md.digest();
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < hashBytes.length; i++) {
+                sb.append(Integer.toString((hashBytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            hash = sb.toString();
+            fis.close();
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return hash;
+    }
+
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

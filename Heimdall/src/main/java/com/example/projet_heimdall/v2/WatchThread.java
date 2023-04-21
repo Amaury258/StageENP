@@ -20,7 +20,7 @@ public class WatchThread extends Thread{
         String filename = "C:\\ProgramData\\Bitdefender\\Desktop\\Profiles\\Logs";
 
         //Recuperation du sid de l'utilisateur (ici c'est AMAURY mais sur les autres machines il faudrat utiliser System.getProperty("user.name")
-        Process process = Runtime.getRuntime().exec("wmic useraccount where name='AMAURY' get sid");
+        Process process = Runtime.getRuntime().exec("wmic useraccount where name='"+System.getProperty("user.name")+"' get sid");
         BufferedReader bfr = new BufferedReader(new InputStreamReader(process.getInputStream()));
         bfr.readLine();
         bfr.readLine();

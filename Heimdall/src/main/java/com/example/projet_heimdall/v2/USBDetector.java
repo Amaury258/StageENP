@@ -14,7 +14,9 @@ import org.jdom2.input.SAXBuilder;
 //import de librairies standard de java
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.attribute.FileAttribute;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javafx.application.Platform;
@@ -48,7 +50,14 @@ public class USBDetector {
             fileReader.close();
 
             //On récupere dans une liste les fichiers présent sur la clé USB
-            lines = getListFiles(root, lines);
+            ArrayList<String> list = getListFiles(root,lines);
+            File listfile = File.createTempFile("listfile",".txt", new File(System.getProperty("user.dir") + "\\tmp"));
+            FileWriter listwriter = new FileWriter(listfile);
+            for(String str:list){
+                listwriter.write(str);
+            }
+            listwriter.close();
+            lines.add(HashUtils.hashFile(listfile.getAbsolutePath()));
 
             if (!lines.isEmpty()) {
                 FileWriter writer = new FileWriter(tagnormal, false);
@@ -82,7 +91,7 @@ public class USBDetector {
             int virus = getResultAnalyseDisk(tuto,root);
 
             if(virus==0) {
-                Platform.runLater(() -> label.setText(label.getText()+"\nAnalyse terminé"));
+                Platform.runLater(() -> label.setText(label.getText()+"\nAnalyse terminée"));
                 Thread.sleep(750);
                 Platform.runLater(() -> label.setText(label.getText()+"\nCréation du TAG"));
                 Thread.sleep(750);
@@ -93,7 +102,15 @@ public class USBDetector {
                 reader.close();
                 fileReader.close();
 
-                lines = getListFiles(root, lines);
+                ArrayList<String> list = getListFiles(root,lines);
+                File listfile = File.createTempFile("listfile",".txt", new File(System.getProperty("user.dir") + "\\tmp"));
+                FileWriter listwriter = new FileWriter(listfile);
+                for(String str:list){
+                    listwriter.write(str);
+                }
+                listwriter.close();
+                lines.add(HashUtils.hashFile(listfile.getAbsolutePath()));
+                listfile.delete();
 
                 if (!lines.isEmpty()) {
                     FileWriter writer = new FileWriter(tagnormal, false);
@@ -161,7 +178,10 @@ public class USBDetector {
         int res = 0;
 
 
-            Platform.runLater(() -> tuto.show());
+            Platform.runLater(() -> {
+                tuto.show();
+                tuto.setX(750);
+            });
             try {
                 Runtime.getRuntime().exec("explorer.exe /root,::{20D04FE0-3AEA-1069-A2D8-08002B30309D}");
             } catch (IOException e) {
@@ -214,8 +234,6 @@ public class USBDetector {
             // Chargement du fichier XML avec JDOM
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(log);
-
-            System.out.println(document.toString());
 
             // Accès à l'élément racine
             Element racine = document.getRootElement();
@@ -288,27 +306,21 @@ public class USBDetector {
     /**
      * Méthode pour récuperer la liste des fichiers d'un dossier
      * @param file
-     * @param al
      * @return
      */
-    private static ArrayList getListFiles(File file, ArrayList al){
+    private static ArrayList<String> getListFiles(File file,ArrayList<String> listfile) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for(File f : file.listFiles()){
             if(!f.isHidden()){
                 if(f.isDirectory()){
-                    ArrayList<String> newal = new ArrayList<>();
-                    newal = getListFiles(f,newal);
-                    al.add(HashUtils.hashString(f.getPath(),"SHA-256"));
-                    for(String str : newal) {
-                        al.add(str);
-                    }
+                    listfile.add(f.getAbsolutePath()+f.lastModified()+f.length());
+                    listfile = getListFiles(f,listfile);
                 } else {
-                    String str = HashUtils.hashString(f.getPath()+" - "+sdf.format(f.lastModified()),"SHA-256");
-                    al.add(str);
+                    listfile.add(f.getAbsolutePath());
                 }
             }
         }
-        return al;
+        return listfile;
     }
 
     /**
@@ -343,16 +355,16 @@ public class USBDetector {
         String driveLetter = drive.getAbsolutePath().substring(0,1);
 
         //String batchFilePath = System.getProperty("user.dir") + "\\src\\main\\java\\com\\example\\projet_heimdall\\v2\\ejecter.cmd";
-        String batchFilePath = System.getProperty("user.dir")+"\\ejecter.cmd";
-        System.out.println(batchFilePath);
-        Process process = Runtime.getRuntime().exec(" "+batchFilePath+" "+driveLetter+" "+System.getProperty("user.dir"));
+        Process process = Runtime.getRuntime().exec("\""+System.getProperty("user.dir")+"\\lib\\USB_Disk_Ejector\\USB_Disk_Eject.exe\" /REMOVELETTER "+driveLetter);
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        StringBuilder output = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            output.append(line + "\n");
+        String output = "";
+
+        Scanner sc = new Scanner(process.getInputStream(), StandardCharsets.UTF_8);
+        while(sc.hasNextLine()){
+            String line = sc.nextLine();
+            output = line;
         }
-        return output.toString();
+
+        return output;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.projet_heimdall;
 
+import com.example.projet_heimdall.v2.HeimdallEjector;
 import com.example.projet_heimdall.v2.MachineCliente;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,12 +14,19 @@ import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
+import java.io.File;
 import java.io.IOException;
 
-public class HelloApplication2 extends Application {
+public class HelloApplication3 extends Application {
 
     private double xOffset, yOffset;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(Stage stage) throws IOException {
 
@@ -37,7 +45,7 @@ public class HelloApplication2 extends Application {
         root.setCenter(label);
         root.setBottom(lbl2);
 
-        BorderPane.setAlignment(title,Pos.CENTER);
+        BorderPane.setAlignment(title, Pos.CENTER);
         BorderPane.setAlignment(label,Pos.CENTER);
         BorderPane.setAlignment(lbl2,Pos.CENTER);
         label.setAlignment(Pos.CENTER);
@@ -54,9 +62,6 @@ public class HelloApplication2 extends Application {
 
         stage.initStyle(StageStyle.UNDECORATED);
 
-        stage.setOnCloseRequest(windowEvent -> windowEvent.consume());
-        Platform.setImplicitExit(false);
-
         // Gérer le déplacement de la fenêtre avec la souris
         root.setOnMousePressed((MouseEvent event) -> {
             xOffset = event.getSceneX();
@@ -69,17 +74,17 @@ public class HelloApplication2 extends Application {
 
         stage.setScene(scene);
 
+        HeimdallEjector mc = new HeimdallEjector(stage,label,lbl2);
+
+        stage.setOnCloseRequest((WindowEvent event) -> event.consume());
+        Platform.setImplicitExit(false);
+
         try {
-            MachineCliente mc = new MachineCliente(stage,label,lbl2);
             Thread thread = new Thread(mc);
             thread.setDaemon(true);
             thread.start();
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }

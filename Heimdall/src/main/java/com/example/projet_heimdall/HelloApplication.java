@@ -29,7 +29,7 @@ public class HelloApplication extends Application {
 
 
         // Créer une étiquette
-        Label title = new Label("Bienvenu sur Heimdall");
+        Label title = new Label("Bienvenue sur Heimdall");
         Label label = new Label("");
         Label lbl2 = new Label("");
 
@@ -87,7 +87,7 @@ public class HelloApplication extends Application {
             thread.setDaemon(true);
             thread.start();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+
         }
 
     }

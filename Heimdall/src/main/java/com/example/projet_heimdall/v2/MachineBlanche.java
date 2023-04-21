@@ -119,8 +119,8 @@ public class MachineBlanche extends Task {
                     File[] newRoots = File.listRoots();
                     //parcours des disques
                     for (File root : newRoots) {
-                        if ((fsv.isDrive(root) && fsv.getSystemTypeDescription(root).contains("USB")) || (!USBDetector.isInternalDisk(root) && !fsv.getSystemTypeDescription(root).contains("USB"))) {
-
+                        if ((fsv.isDrive(root) && fsv.getSystemTypeDescription(root).contains("USB")) ||
+                                (!USBDetector.isInternalDisk(root) && !fsv.getSystemTypeDescription(root).contains("USB"))) {
                             // la clé USB a été trouvée
                             Platform.runLater(() -> {
                                 vbox.getChildren().remove(imageView);
@@ -152,8 +152,6 @@ public class MachineBlanche extends Task {
 
                                         Platform.runLater(() -> lbl.setText(lbl.getText() + "\nFichier chiffré\nÉjection de la clé USB"));
 
-                                        tag.delete();
-
                                         Thread.sleep(1000);
                                     } else {
                                         if(new File(root.getAbsolutePath() + "System Volume Information\\TAG").exists()) {
@@ -176,27 +174,28 @@ public class MachineBlanche extends Task {
                                     });
 
                                 }
+                            if(root.exists()) {
                             AtomicInteger countdown = new AtomicInteger(1);
                             Platform.runLater(() -> {
-                                PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
-                                pauseTransition.setOnFinished(actionEvent -> {
-                                    //Ejection de la clé usb
-                                    try {
-                                        USBDetector.eject(root);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    lbl.setText(lbl.getText() + "\nLe périphérique USB à été éjecté avec succés");
-                                    countdown.getAndDecrement();
-                                });
-                                pauseTransition.play();
+                                    PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
+                                    pauseTransition.setOnFinished(actionEvent -> {
+                                        //Ejection de la clé usb
+                                        try {
+                                            lbl.setText(lbl.getText() + "\n"+USBDetector.eject(root));
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+
+                                        countdown.getAndDecrement();
+                                    });
+                                    pauseTransition.play();
                             });
 
                             //doit attendre la fin de l'éjection (ce qu'il y a juste au dessus)
                             while (countdown.intValue() == 1) {
                                 Thread.sleep(1000);
                             }
-
+                        }
                             for (j = 10; j > 0; j--) {
                                 int finalJ = j;
                                 Platform.runLater(() -> {
@@ -213,6 +212,10 @@ public class MachineBlanche extends Task {
                                 });
                                 Platform.requestNextPulse();
                                 i--;
+                            }
+
+                            for(File f:new File(System.getProperty("user.dir")+"\\tmp").listFiles()){
+                                f.delete();
                             }
                         }
                     }
