@@ -1,0 +1,2 @@
+Heimdall/out/artifacts/Heimdall/lib/jdk-17.0.6/lib/modules filter=lfs diff=lfs merge=lfs -text
+Heimdall/out/artifacts/Heimdall/lib/* filter=lfs diff=lfs merge=lfs -text

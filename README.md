@@ -187,6 +187,7 @@ programme sur le serveur, tant dis que pour la machine blanche il s'agit juste d
 (avec ce qu'il a besoin pour tourner) sur la machine blanche, donc rien de bien compliqué.
 
 <h2>Semaine 6</h2>
+<<<<<<< HEAD
 
 Lors de la 6eme Semaine je me suis concentré sur les téléphones puisque l'analyse et l'ejection des périphérique USB 
 (clé ou disque dur externe) est presque totalement terminé.
@@ -240,4 +241,6 @@ une relecture du code, j'ai remarqué que lorsqu'on vérifie si le disque est in
 d'initier le résultat de la méthode à true pour dire qu'il s'agit d'un disque interne, j'ai mis à false et en plus lors 
 de la vérification du MediaType, au lieu de vérifier si il ne contenait pas la chaine de caractere "Fixed" je vérifiais 
 si il la contenait, apres avoir résolu ces deux problemes, l'application fonctionne correctement.
+=======
+>>>>>>> 59353e1f3f5f522ac7249baf45320f33b2dfb941
 

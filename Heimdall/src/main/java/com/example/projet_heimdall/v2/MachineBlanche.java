@@ -181,11 +181,19 @@ public class MachineBlanche extends Task {
                                     pauseTransition.setOnFinished(actionEvent -> {
                                         //Ejection de la clé usb
                                         try {
+<<<<<<< HEAD
                                             lbl.setText(lbl.getText() + "\n"+USBDetector.eject(root));
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }
 
+=======
+                                            USBDetector.eject(root);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        lbl.setText(lbl.getText() + "\nLe périphérique USB à été éjecté avec succés");
+>>>>>>> 59353e1f3f5f522ac7249baf45320f33b2dfb941
                                         countdown.getAndDecrement();
                                     });
                                     pauseTransition.play();

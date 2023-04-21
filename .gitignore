@@ -33,3 +33,6 @@ tmp/
 .idea/
 *.iml
 *.xml
+
+*\module-info.java
+.mf
